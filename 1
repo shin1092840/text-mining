@@ -34,37 +34,37 @@ twitter_token = create_token(
   consumer_secret = CONSUMERSECRET
 )
 
-# @MotokazuUdagawaのタイムライン取得
-udagawa_home_timeline = get_timeline("MotokazuUdagawa", n = 1000, home = FALSE, token = twitter_token)
+# @someoneのタイムライン取得
+someone_home_timeline = get_timeline("Someone", n = 1000, home = FALSE, token = twitter_token)
 
 # テキスト情報を取得
-udagawa_home_timeline_texts = udagawa_home_timeline$text
+someone_home_timeline_texts = someone_home_timeline$text
 
 # 日本語のみ抽出
-udagawa_home_timeline_texts_onlyJa = str_replace_all(udagawa_home_timeline_texts, "\\p{ASCII}", "")
-udagawa_home_timeline_texts_onlyJa_shiftJis = udagawa_home_timeline_texts_onlyJa %>% iconv(from = "UTF-8", to = "CP932") %>% na.omit()
+someone_home_timeline_texts_onlyJa = str_replace_all(someone_home_timeline_texts, "\\p{ASCII}", "")
+someone_home_timeline_texts_onlyJa_shiftJis = someone_home_timeline_texts_onlyJa %>% iconv(from = "UTF-8", to = "CP932") %>% na.omit()
 
 # 200件のツイートを1つのテキストとしてまとめる
-udagawa_home_tweets_all = ""
-for (i in 1:length((udagawa_home_timeline_texts_onlyJa_shiftJis))){
-  udagawa_home_tweets_all = paste(udagawa_home_tweets_all, udagawa_home_timeline_texts_onlyJa_shiftJis[i], seq = "")
+someone_home_tweets_all = ""
+for (i in 1:length((someone_home_timeline_texts_onlyJa_shiftJis))){
+  someone_home_tweets_all = paste(someone_home_tweets_all, someone_home_timeline_texts_onlyJa_shiftJis[i], seq = "")
 }
 
 # あとで使えるように保存
-write.table(udagawa_home_tweets_all, "udagawa_home_timeline_texts.txt")
-write.table(udagawa_home_tweets_all, "udagawa_home_tweets_all200.txt")
+write.table(someone_home_tweets_all, "someone_home_timeline_texts.txt")
+write.table(someone_home_tweets_all, "someone_home_tweets_all200.txt")
 
 # 先ほど保存したテキストファイルから形態素解析実行
-docDF_udagawa = docDF("udagawa_home_tweets_all200.txt", type = 1)
+docDF_someone = docDF("someone_home_tweets_all200.txt", type = 1)
 # 名詞情報かつ非自立でないものを抽出
-docDF_udagawa2 = docDF_udagawa %>% filter(POS1 %in% c("名詞"), POS2 != "非自立") 
+docDF_someone2 = docDF_someone %>% filter(POS1 %in% c("名詞"), POS2 != "非自立") 
 
 # Word CLoud実行
-wordcloud(docDF_udagawa2$TERM,docDF_udagawa2$udagawa_home_tweets_all200.txt, min.freq= 3,shape='diamond', scale=c(6,1), family ="JP1"
+wordcloud(docDF_someone2$TERM,docDF_someone2$someone_home_tweets_all200.txt, min.freq= 3,shape='diamond', scale=c(6,1), family ="JP1"
           , colors = brewer.pal(8,"Dark2"))
 
 # 解析対象となるデータの読み込み
-res <- RMeCabFreq("udagawa_home_timeline_texts.txt")
+res <- RMeCabFreq("someone_home_timeline_texts.txt")
 
 # 感動詞だけを取り出してデータフレームres_nounへ
 res_noun <- res[res[,2]=="名詞",]
@@ -89,7 +89,7 @@ ggplot(res_noun2, aes(x=reorder(word,freq), y=freq)) +
   coord_flip() 
 
 # Converting tweets to ASCII to trackle strange characters
-tweets <- iconv(udagawa_home_timeline, from="UTF-8", to="ASCII", sub="")
+tweets <- iconv(someone_home_timeline, from="UTF-8", to="ASCII", sub="")
 # removing retweets, in case needed 
 tweets <-gsub("(RT|via)((?:\\b\\w*@\\w+)+)","",tweets)
 # removing mentions, in case needed
